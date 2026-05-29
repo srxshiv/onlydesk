@@ -1,0 +1,36 @@
+{
+  "name": "@onlydesk/tool-resume-editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./surfaces/desk-icon": "./src/surfaces/desk-icon.tsx",
+    "./surfaces/workspace": "./src/surfaces/workspace.tsx"
+  },
+  "files": ["dist", "src/surfaces"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@onlydesk/shared-types": "workspace:*",
+    "@onlydesk/tools-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@onlydesk/config": "workspace:*",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.6.3"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}
