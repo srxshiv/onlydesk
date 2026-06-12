@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Zod mirror of ToolManifest for runtime validation when a tool is loaded. */
-export const ContextScopeIdSchema = z.enum(['work_log', 'job_target', 'skills', 'projects', 'education', 'goals', 'social_voice', 'health_log'])
+export const ContextScopeIdSchema = z.enum(['work_log', 'job_target', 'skills', 'projects', 'education', 'goals', 'social_voice', 'health_log', 'todos'])
 
 export const ToolMcpConfigSchema = z.object({
   transport: z.enum(['stdio', 'sse', 'http']),

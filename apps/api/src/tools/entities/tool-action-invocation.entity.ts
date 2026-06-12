@@ -11,6 +11,8 @@ export class ToolActionInvocationEntity {
   @Column({ type: 'jsonb' }) input!: Record<string, unknown>
   @Column({ type: 'jsonb', nullable: true }) output!: Record<string, unknown> | null
   @Column({ type: 'text', nullable: true }) error!: string | null
+  /** Live progress beats appended by the running handler's stream(). */
+  @Column({ type: 'jsonb', default: () => "'[]'::jsonb" }) progress!: { at: string; message: string }[]
   @CreateDateColumn({ name: 'started_at' }) startedAt!: Date
   @Column({ name: 'finished_at', type: 'timestamptz', nullable: true }) finishedAt!: Date | null
 }

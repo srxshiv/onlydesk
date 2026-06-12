@@ -73,6 +73,20 @@ export type ToolManifest = {
   }
 }
 
+/** Persisted desk placement of one tool's widget — synced across devices. */
+export type ToolLayout = {
+  /** Focus Space id the widget lives on. */
+  space: string
+  size: 'sm' | 'md' | 'lg'
+  /** Freeform-mode position, px relative to the canvas. */
+  x: number
+  y: number
+  /** Freeform stacking order. */
+  z: number
+  /** Grid-mode slot index within the space. */
+  order: number
+}
+
 /** Per-user installation row. */
 export type InstalledTool = {
   id: string
@@ -80,8 +94,19 @@ export type InstalledTool = {
   toolId: string
   installedAt: string
   config: Record<string, unknown>
+  /**
+   * Scope keys (built-in ids or the user's custom-store keys) this tool may
+   * read. Seeded from the manifest's contextScopes at install; owned and
+   * edited by the user afterward. The runtime gates reads strictly on this.
+   */
+  contextGrants: string[]
+  /** Desk placement, null until the user first arranges the widget. */
+  layout: ToolLayout | null
   enabled: boolean
 }
+
+/** One progress beat emitted by a running handler via `stream()`. */
+export type InvocationProgress = { at: string; message: string }
 
 export type ToolActionInvocation = {
   id: string
@@ -92,6 +117,8 @@ export type ToolActionInvocation = {
   input: Record<string, unknown>
   output: Record<string, unknown> | null
   error: string | null
+  /** Structured progress log — the UI polls and renders this as a live timeline. */
+  progress: InvocationProgress[]
   startedAt: string
   finishedAt: string | null
 }

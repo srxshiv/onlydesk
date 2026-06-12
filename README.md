@@ -7,24 +7,25 @@ A Turborepo monorepo: NestJS API + Next.js web + a plugin system (`tools-sdk`) s
 ## Quick start
 
 ```bash
-# 1. Install (requires Node 24.13+, pnpm 9+)
+# 1. Install (Node ≥22.12 — .nvmrc pins 24.13; pnpm 9+)
 pnpm install
 
-# 2. Start Postgres + Redis
+# 2. Start Postgres + Redis (have a local Postgres on :5432? see the Setup Guide)
 docker compose up -d
 
-# 3. Copy env files
+# 3. Env files — then generate a real CONFIG_ENCRYPTION_KEY (required at boot)
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
+sed -i '' "s|^CONFIG_ENCRYPTION_KEY=.*|CONFIG_ENCRYPTION_KEY=$(openssl rand -base64 32)|" apps/api/.env
 
-# 4. Run migrations
-pnpm db:migrate
+# 4. Migrate + seed
+pnpm db:migrate && pnpm db:seed
 
-# 5. Start everything
+# 5. Start everything (api :4000 + web :3000)
 pnpm dev
 ```
 
-Then visit `http://localhost:3000`.
+Then visit `http://localhost:3000`. Full walkthrough + troubleshooting: [docs/guides/SETUP.md](docs/guides/SETUP.md).
 
 ## Layout
 
@@ -40,11 +41,13 @@ Then visit `http://localhost:3000`.
 
 ## Docs
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system overview and request flow
-- [docs/TOOL-SDK.md](docs/TOOL-SDK.md) — build a new tool in under an hour
-- [docs/CONTEXT-STORE.md](docs/CONTEXT-STORE.md) — the typed event log every tool reads from
-- [docs/MCP-INTEGRATION.md](docs/MCP-INTEGRATION.md) — wiring MCP servers via ADK
-- [docs/ROADMAP.md](docs/ROADMAP.md) — what ships when
+Segregated by audience in [docs/](docs/README.md):
+
+- **Manual** — [docs/manual/USER-MANUAL.md](docs/manual/USER-MANUAL.md) — the full user manual
+- **API** — [docs/api/REST-API.md](docs/api/REST-API.md) — endpoint reference + error contract
+- **Architecture** — [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) · [CONTEXT-STORE.md](docs/architecture/CONTEXT-STORE.md) · [MCP-INTEGRATION.md](docs/architecture/MCP-INTEGRATION.md)
+- **Guides** — [SETUP.md](docs/guides/SETUP.md) (dev, zero→running) · [DEVELOPMENT.md](docs/guides/DEVELOPMENT.md) (day-to-day) · [DEPLOYMENT.md](docs/guides/DEPLOYMENT.md) (production) · [TOOL-SDK.md](docs/guides/TOOL-SDK.md)
+- **Roadmap** — [docs/ROADMAP.md](docs/ROADMAP.md) — what ships when
 
 ## Commands
 

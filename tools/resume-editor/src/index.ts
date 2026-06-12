@@ -10,3 +10,4 @@ export const resumeEditorTool = defineTool({
 })
 
 export { manifest }
+export type { ResumeChange, TailorResumeOutput } from './handlers/tailor-resume.js'

@@ -60,19 +60,27 @@ Browser  <──poll/SSE────┘
 
 - JWT guard is global. Endpoints opt out with `@Public()`.
 - CASL `AbilityFactory` produces a per-user `AppAbility`; controllers check it for cross-user access (e.g., reading another user's invocation).
-- Inside a tool handler, the `ctx` client refuses any scope not declared in the tool's manifest. Defense in depth.
+- Inside a tool handler, the `ctx` client gates every read on the installation's **`contextGrants`** — the user-owned list of scope keys (built-in or custom) wired to the tool in the Context Store's "Tool access" patch bay. The manifest's `contextScopes` only seed the defaults at install. `ctx.readAny(key)` reads granted custom stores; non-granted reads throw. Writes remain gated by `manifest.permissions.write`.
 
 ## What lives where (cheat sheet)
 
 - New domain type? → `packages/shared-types`
 - New endpoint? → `apps/api` + add to `packages/api-client`
 - New tool? → `tools/<your-tool>`, register in `apps/api/src/tools/tools.module.ts`
-- New context scope? → `packages/shared-types/src/context.ts` + new entity + new migration + map in `ContextService`
+- New built-in context scope? → `packages/shared-types/src/context.ts` + new entity + new migration + map in `ContextService`
+- User-defined scope? → no code at all — runtime feature via `/context/schemas` (JSONB-backed)
+
+## Hardening already in place
+
+- `installed_tools.config` is AES-256-GCM encrypted at rest (TypeORM transformer; key via `CONFIG_ENCRYPTION_KEY`).
+- Queued actions retry with exponential backoff, time out explicitly, and dead-letter to `tool-actions-dlq` on exhaustion.
+- All errors (HTTP + worker) normalize through one typed contract (`common/errors/error-contract.ts`) matching `@onlydesk/shared-types`.
+- User-defined context scopes: `ctx_custom_schemas` / `ctx_custom_records` with schema-validated writes — no migration per scope.
+- Tool manifests mirror into a DB registry (`tool_manifests`) on boot/seed — the substrate for the Phase 3 marketplace.
 
 ## Production readiness gaps to close before launch
 
 - Real OAuth provider strategies (Google/GitHub) — stubs only.
-- Per-tool secret storage (Overleaf token, etc.) — encrypted column on `installed_tools.config`.
 - Rate limiting on `/tools/.../actions/...` per user.
 - Observability: OpenTelemetry traces around `AgentRunnerService.run()` and `McpService.buildToolset()`.
 - ADK error taxonomy → sanitized user-facing messages.

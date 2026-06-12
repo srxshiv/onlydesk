@@ -1,5 +1,10 @@
-import wretch, { type Wretch } from 'wretch'
+import wretch from 'wretch'
+import QueryStringAddon from 'wretch/addons/queryString'
 import { err, ok, type ApiError, type ApiErrorCode, type ApiResult } from '@onlydesk/shared-types'
+
+/** Base wretch instance with the query-string addon registered (`.query(...)`). */
+const makeBase = (baseUrl: string) => wretch(baseUrl).addon(QueryStringAddon).options({ credentials: 'include' })
+type BaseClient = ReturnType<typeof makeBase>
 
 export type ClientOptions = {
   baseUrl: string
@@ -21,15 +26,15 @@ const codeFromStatus = (status: number): ApiErrorCode => {
 }
 
 export const createClient = (opts: ClientOptions) => {
-  const base: Wretch = wretch(opts.baseUrl).options({ credentials: 'include' })
+  const base = makeBase(opts.baseUrl)
 
-  const withAuth = async (): Promise<Wretch> => {
+  const withAuth = async (): Promise<BaseClient> => {
     if (!opts.getAccessToken) return base
     const token = await opts.getAccessToken()
     return token ? base.auth(`Bearer ${token}`) : base
   }
 
-  const request = async <T>(fn: (w: Wretch) => Promise<T>): Promise<ApiResult<T>> => {
+  const request = async <T>(fn: (w: BaseClient) => Promise<T>): Promise<ApiResult<T>> => {
     try {
       const w = await withAuth()
       const data = await fn(w)

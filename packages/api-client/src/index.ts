@@ -15,4 +15,5 @@ export const createApiClient = (opts: ClientOptions) => {
 export type ApiClient = ReturnType<typeof createApiClient>
 
 export type { ClientOptions } from './client.js'
+export type { CreateSchemaInput, UpdateSchemaInput } from './endpoints/context.js'
 export * from '@onlydesk/shared-types'

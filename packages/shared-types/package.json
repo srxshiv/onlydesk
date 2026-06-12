@@ -8,22 +8,28 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./tools": {
       "types": "./dist/tools.d.ts",
-      "import": "./dist/tools.js"
+      "import": "./dist/tools.js",
+      "default": "./dist/tools.js"
     },
     "./context": {
       "types": "./dist/context.d.ts",
-      "import": "./dist/context.js"
+      "import": "./dist/context.js",
+      "default": "./dist/context.js"
     },
     "./auth": {
       "types": "./dist/auth.d.ts",
-      "import": "./dist/auth.js"
+      "import": "./dist/auth.js",
+      "default": "./dist/auth.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",

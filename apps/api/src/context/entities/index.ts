@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm'
+import type { CustomFieldDef } from '@onlydesk/shared-types'
 
 @Entity('ctx_work_log')
 @Index(['userId', 'date'])
@@ -91,6 +92,23 @@ export class HealthLogEntity {
   @CreateDateColumn({ name: 'created_at' }) createdAt!: Date
 }
 
+@Entity('ctx_todo')
+@Index(['userId', 'createdAt'])
+export class TodoEntity {
+  @PrimaryGeneratedColumn('uuid') id!: string
+  @Column({ name: 'user_id' }) userId!: string
+  @Column({ type: 'varchar', length: 512 }) title!: string
+  @Column({ name: 'due_date', type: 'date', nullable: true }) dueDate!: string | null
+  @Column({ type: 'varchar', length: 16, nullable: true }) time!: string | null
+  @Column({ type: 'varchar', length: 16, default: 'none' }) recurrence!: 'none' | 'daily' | 'weekly'
+  @Column({ name: 'recurrence_days', type: 'int', array: true, default: () => "'{}'" }) recurrenceDays!: number[]
+  @Column({ type: 'text', array: true, default: () => "'{}'" }) tags!: string[]
+  /** ISO dates this recurring todo was checked off. */
+  @Column({ type: 'jsonb', default: () => "'[]'::jsonb" }) completions!: string[]
+  @Column({ type: 'varchar', length: 16, default: 'open' }) status!: 'open' | 'done'
+  @CreateDateColumn({ name: 'created_at' }) createdAt!: Date
+}
+
 @Entity('ctx_summaries')
 export class ContextSummaryEntity {
   @PrimaryGeneratedColumn('uuid') id!: string
@@ -98,4 +116,32 @@ export class ContextSummaryEntity {
   @Column() scope!: string
   @Column({ type: 'text' }) summary!: string
   @CreateDateColumn({ name: 'generated_at' }) generatedAt!: Date
+}
+
+/* ===== Dynamic / user-defined scopes (JSONB-backed, no migration per scope) ===== */
+
+/** Metadata describing a user-defined scope: its slug, name, and field schema. */
+@Entity('ctx_custom_schemas')
+@Unique(['userId', 'key'])
+@Index(['userId'])
+export class ContextSchemaEntity {
+  @PrimaryGeneratedColumn('uuid') id!: string
+  @Column({ name: 'user_id' }) userId!: string
+  @Column({ type: 'varchar', length: 64 }) key!: string
+  @Column({ type: 'varchar', length: 128 }) name!: string
+  @Column({ type: 'text', nullable: true }) description!: string | null
+  @Column({ type: 'jsonb', default: () => "'[]'::jsonb" }) fields!: CustomFieldDef[]
+  @CreateDateColumn({ name: 'created_at' }) createdAt!: Date
+  @UpdateDateColumn({ name: 'updated_at' }) updatedAt!: Date
+}
+
+/** A single record stored against a custom schema; payload lives in JSONB. */
+@Entity('ctx_custom_records')
+@Index(['userId', 'schemaId', 'createdAt'])
+export class ContextRecordEntity {
+  @PrimaryGeneratedColumn('uuid') id!: string
+  @Column({ name: 'user_id' }) userId!: string
+  @Column({ name: 'schema_id' }) schemaId!: string
+  @Column({ type: 'jsonb', default: () => "'{}'::jsonb" }) data!: Record<string, unknown>
+  @CreateDateColumn({ name: 'created_at' }) createdAt!: Date
 }

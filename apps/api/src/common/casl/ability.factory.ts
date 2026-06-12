@@ -3,7 +3,12 @@ import { Injectable } from '@nestjs/common'
 
 export type Action = 'manage' | 'read' | 'write' | 'invoke' | 'install'
 export type Subject = 'User' | 'Tool' | 'Context' | 'all'
-export type AppAbility = MongoAbility<[Action, Subject]>
+/**
+ * Subjects here are matched by string tag plus a conditions object (e.g.
+ * `{ userId }`), so we keep the ability loosely typed rather than binding it to
+ * class subjects. Authorization checks pass `subject('Context', { userId })`.
+ */
+export type AppAbility = MongoAbility
 
 @Injectable()
 export class AbilityFactory {

@@ -4,8 +4,15 @@
     "outDir": "dist",
     "rootDir": "src",
     "jsx": "preserve",
-    "lib": ["ES2023", "dom"]
+    "lib": [
+      "ES2023",
+      "dom"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/surfaces/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/ui/**/*"
+  ]
 }

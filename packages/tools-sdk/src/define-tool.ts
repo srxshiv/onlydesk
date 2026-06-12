@@ -7,6 +7,13 @@ import type { ContextEntryByScope, ContextScopeId, ToolAction, ToolManifest } fr
  */
 export type ContextClient<Scopes extends ContextScopeId> = {
   read<S extends Scopes>(scope: S, opts?: { limit?: number; since?: string }): Promise<ContextEntryByScope[S][]>
+  /**
+   * Read any scope the user has granted to this tool — including their custom
+   * JSONB stores, which can't be known at manifest time. Rows come back flat
+   * (custom-record payloads are spread to the top level alongside id/createdAt).
+   * Throws if the scope isn't in the user's grants for this installation.
+   */
+  readAny(scope: string, opts?: { limit?: number; since?: string }): Promise<Record<string, unknown>[]>
   write<S extends Scopes>(scope: S, entry: Omit<ContextEntryByScope[S], 'id' | 'userId' | 'createdAt'>): Promise<ContextEntryByScope[S]>
   summarize(scope: Scopes): Promise<string>
 }
@@ -18,6 +25,11 @@ export type ActionContext<Scopes extends ContextScopeId> = {
   userId: string
   input: Record<string, unknown>
   ctx: ContextClient<Scopes>
+  /**
+   * The scope keys (built-in or custom) the user has granted this installation.
+   * Iterate these with `ctx.readAny` to ingest everything the user wired up.
+   */
+  grantedScopes: string[]
   /** Tool-level config the user has saved (e.g. Overleaf project id). */
   toolConfig: Record<string, unknown>
   /** Stream a partial result back to the caller. */
@@ -35,6 +47,8 @@ export type RunAgentOptions = {
   instruction: string
   prompt: string
   tools?: unknown[]
+  /** Standard JSON Schema — forces Gemini structured output matching this shape. */
+  responseSchema?: Record<string, unknown>
 }
 
 export type RunAgentResult = {

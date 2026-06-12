@@ -1,35 +1,61 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { Lock, Mail } from 'lucide-react'
 import { useSignIn } from '@/hooks/use-auth'
+import { AuthError, AuthInput, AuthNotice, AuthShell, AuthSubmit } from '@/components/auth/auth-shell'
 
 export default function SignIn() {
   const router = useRouter()
   const mut = useSignIn()
   const [form, setForm] = useState({ email: '', password: '' })
+  const [notice, setNotice] = useState<string | null>(null)
+
+  // Validate on submit, not by disabling the button — autofill and password
+  // managers don't always fire onChange, so a gated button can lock users out.
+  const validate = (): string | null => {
+    if (!form.email.includes('@')) return 'That email doesn’t look right.'
+    if (form.password.length < 8) return 'Passwords are at least 8 characters.'
+    return null
+  }
+
   return (
-    <main className="mx-auto max-w-sm px-6 py-24">
-      <h1 className="mb-6 text-2xl font-semibold">Welcome back</h1>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Your desk is exactly how you left it."
+      footer={
+        <>
+          New here?{' '}
+          <Link href="/auth/sign-up" className="font-medium text-accent/90 transition-colors hover:text-accent">
+            Get a desk
+          </Link>
+        </>
+      }
+    >
       <form
         onSubmit={async (e) => {
           e.preventDefault()
+          const problem = validate()
+          setNotice(problem)
+          if (problem) return
           try {
             await mut.mutateAsync(form)
             router.push('/desk')
           } catch {
-            /* surfaced via mut.error */
+            /* surfaced via mut.error below */
           }
         }}
-        className="space-y-3"
+        className="space-y-4"
+        noValidate
       >
-        <input className="w-full rounded border px-3 py-2" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <input className="w-full rounded border px-3 py-2" placeholder="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        <button className="w-full rounded bg-amber-700 py-2 text-amber-50 disabled:opacity-50" disabled={mut.isPending}>
-          {mut.isPending ? 'Signing in…' : 'Sign in'}
-        </button>
-        {mut.error ? <p className="text-sm text-red-600">Invalid email or password.</p> : null}
+        <AuthInput label="Email" icon={Mail} type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoFocus />
+        <AuthInput label="Password" icon={Lock} reveal autoComplete="current-password" placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        <AuthNotice message={notice} />
+        <AuthError error={mut.error} mode="sign-in" />
+        <AuthSubmit pending={mut.isPending}>{mut.isPending ? 'Lighting the lamps…' : 'Sign in'}</AuthSubmit>
       </form>
-    </main>
+    </AuthShell>
   )
 }

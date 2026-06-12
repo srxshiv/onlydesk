@@ -2,23 +2,104 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * onlydesk — "a desk at night"
+ * Warm wood, brass hardware, paper-toned ink, pools of lamplight.
+ * Every color routes through these variables; Focus Spaces override them
+ * (see spaceCssVars) so the entire UI re-tints as one material.
+ */
 @layer base {
   :root {
-    color-scheme: light;
-    --desk-ambient: 1;
-  }
-  [data-theme='dim'] {
-    color-scheme: light;
-    --desk-ambient: 0.6;
-  }
-  [data-theme='off'] {
     color-scheme: dark;
-    --desk-ambient: 0.18;
+
+    /* paper & hardware (HSL triplets — composed with alpha in Tailwind) */
+    --ink: 38 38% 90%; /* warm paper white */
+    --ink-dim: 33 14% 60%; /* faded pencil */
+    --line: 36 48% 76%; /* hairlines, used at low alpha */
+    --pane: 38 62% 82%; /* frosted-pane tint, used at ~5-12% */
+    --accent: 38 52% 58%; /* brass — overridden per Focus Space */
+
+    /* wood finish — overridden per Focus Space */
+    --wood-deep: #170e07;
+    --wood-mid: #271709;
+    --wood-hi: #3d240e;
   }
+
   body {
-    @apply min-h-screen bg-neutral-100 text-neutral-900 antialiased;
+    @apply min-h-screen antialiased;
+    color: hsl(var(--ink));
+    background-color: var(--wood-deep);
+    background-image: linear-gradient(178deg, var(--wood-mid) 0%, var(--wood-deep) 78%);
+    background-attachment: fixed;
   }
-  [data-theme='off'] body {
-    @apply bg-neutral-950 text-neutral-100;
+
+  ::selection {
+    background: hsl(var(--accent) / 0.35);
+    color: hsl(var(--ink));
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--line) / 0.18) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: hsl(var(--line) / 0.18);
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Frosted pane sitting on the wood. */
+  .pane {
+    background: hsl(var(--pane) / 0.055);
+    border: 1px solid hsl(var(--line) / 0.11);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 12px 44px rgba(12, 6, 0, 0.45);
+  }
+
+  /* Brass hairline along a pane's top edge. */
+  .pane-edge {
+    position: relative;
+  }
+  .pane-edge::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, transparent 4%, hsl(var(--accent) / 0.55), transparent 96%);
+    pointer-events: none;
+  }
+
+  /* Engraved label — small caps tracking, like stamped brass. */
+  .engraved {
+    @apply text-[11px] font-medium uppercase;
+    letter-spacing: 0.14em;
+    color: hsl(var(--ink-dim));
+  }
+
+  /* Warm range sliders (daily check-in). */
+  .slider-warm {
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full;
+    background: hsl(var(--pane) / 0.12);
+  }
+  .slider-warm::-webkit-slider-thumb {
+    @apply h-4 w-4 appearance-none rounded-full;
+    background: hsl(var(--accent));
+    box-shadow: 0 0 12px hsl(var(--accent) / 0.6);
+    border: 2px solid var(--wood-deep);
+  }
+  .slider-warm::-moz-range-thumb {
+    @apply h-4 w-4 rounded-full border-none;
+    background: hsl(var(--accent));
+    box-shadow: 0 0 12px hsl(var(--accent) / 0.6);
   }
 }

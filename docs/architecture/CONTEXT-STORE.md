@@ -36,12 +36,24 @@ GET    /api/context/:scope/summary
 
 All endpoints require auth. The user can only see their own rows; CASL enforces it at the controller layer.
 
-## Adding a new scope
+## Custom scopes (user-defined, JSONB-backed)
+
+Users define their own stores at runtime — no migration, no deploy:
+
+- **`ctx_custom_schemas`** holds the metadata: a per-user `key` (slug), display name, and a `fields` JSONB array of `{ name, label, type, required, options }` (`type` ∈ string · text · number · boolean · date · enum).
+- **`ctx_custom_records`** holds the entries: `(user_id, schema_id, data jsonb)`.
+- `CustomContextService` validates every record write against the stored field definitions (`context-validation.ts`) and gates everything with the same CASL checks as built-ins.
+- Routes are shared: `/context/:scope` dispatches to the typed tables for the 8 built-in ids and to the JSONB store for anything else (404 if undefined). Schema CRUD lives at `/context/schemas` — see the [API reference](../api/REST-API.md).
+- Reserved keys: the built-in scope ids, `schemas`, `summary`.
+
+## Adding a new *built-in* scope
+
+For first-class scopes that warrant typed columns and indexes:
 
 1. **`packages/shared-types/src/context.ts`** — add the entry type and to `ContextScopeId` union and `ContextEntryByScope`.
 2. **`apps/api/src/context/entities/index.ts`** — add a TypeORM entity.
-3. **New migration** — `pnpm db:migrate:gen src/database/migrations/Add<Scope>`. Edit to taste.
-4. **`apps/api/src/context/context.service.ts`** — extend `SCOPES` and `ScopeRepoMap`, inject the repo.
+3. **New migration** — `pnpm --filter @onlydesk/api migration:generate src/database/migrations/Add<Scope>`. Edit to taste.
+4. **`apps/api/src/context/context.constants.ts` + `context.service.ts`** — extend `BUILTIN_SCOPES` and `ScopeRepoMap`, inject the repo.
 5. **`packages/tools-sdk/src/manifest-schema.ts`** — extend `ContextScopeIdSchema`.
 
 After that, tools can declare it in `contextScopes` and read it via `ctx.read`.

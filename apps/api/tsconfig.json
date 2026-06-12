@@ -5,7 +5,11 @@
     "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      // @t3-oss/env-core ships an exports map with no `main`/`types`, which the
+      // CommonJS (Node10) resolver used for the Nest build cannot follow. Point
+      // tsc straight at its declarations; Node 22 resolves it fine at runtime.
+      "@t3-oss/env-core": ["node_modules/@t3-oss/env-core/dist/index.d.ts"]
     }
   },
   "include": ["src/**/*"]

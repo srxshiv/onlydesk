@@ -3,8 +3,8 @@ import type { ToolManifest } from '@onlydesk/shared-types'
 export const manifest: ToolManifest = {
   id: 'resume-editor',
   name: 'Resume Editor',
-  description: 'Tailor a LaTeX resume to a specific job description using your work history and projects.',
-  version: '0.1.0',
+  description: 'Paste a job description; get a tailored LaTeX resume grounded in your work history, with a diff of every change it made.',
+  version: '0.2.0',
   category: 'professional',
   icon: { deskObject: 'notebook', color: 'amber' },
   model: 'gemini-2.5-pro',
@@ -20,15 +20,15 @@ export const manifest: ToolManifest = {
     {
       id: 'tailor-resume',
       name: 'Tailor resume to JD',
-      description: 'Generate a LaTeX resume tailored to a given job description, grounded in your context store.',
+      description: 'Reads the pasted job description, compares it against your granted context, and generates tailored LaTeX plus a change diff.',
       execution: 'queued',
       input: {
         type: 'object',
         properties: {
-          jobTargetId: { type: 'string', description: 'ID of an existing job_target entry' },
-          overleafProjectId: { type: 'string', description: 'Optional Overleaf project to push into' },
+          jobDescription: { type: 'string', description: 'The full job description text' },
+          filename: { type: 'string', description: 'Output Profile target filename (e.g. resume.pdf)' },
         },
-        required: ['jobTargetId'],
+        required: ['jobDescription'],
       },
     },
   ],
@@ -37,7 +37,7 @@ export const manifest: ToolManifest = {
     write: [],
   },
   surfaces: {
-    deskIcon: '@onlydesk/tool-resume-editor/surfaces/desk-icon',
-    workspace: '@onlydesk/tool-resume-editor/surfaces/workspace',
+    deskIcon: '@onlydesk/tool-resume-editor/ui#ToolDeskIcon',
+    workspace: '@onlydesk/tool-resume-editor/ui#ToolWorkspace',
   },
 }
